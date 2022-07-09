@@ -1,8 +1,21 @@
 public class MTCollatz {
     public static void main(String[] args)
     {
+        if(args.length == 0)
+        {
+            System.out.println("Missing necessary arguments");
+            return;
+        }
+
+        if(!tryParseInt(args[0]))
+        {
+            System.out.println("Not a proper integer value was given");
+            return;
+        }
+        int numberOfCalculations = Integer.parseInt(args[0]);
+
         int[] stoppingTimes = new int[1000];
-        for(long i = 1; i < 100000; i++)
+        for(long i = 1; i < numberOfCalculations; i++)
         {
             long a = i;
             int stoppingTime = 1;
@@ -35,5 +48,12 @@ public class MTCollatz {
         }
         return nextA;
     }
-
+    private static boolean tryParseInt(String value) {
+        try {
+            Integer.parseInt(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 }
