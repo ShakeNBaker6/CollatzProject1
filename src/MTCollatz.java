@@ -12,7 +12,6 @@ public class MTCollatz {
                 stoppingTime ++;
             }
             stoppingTimes[stoppingTime] = stoppingTimes[stoppingTime] + 1;
-            stoppingTime = 0;
         }
 
         for(int i = 0; i < stoppingTimes.length; i++)
