@@ -1,40 +1,45 @@
 import java.time.Instant;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class MTCollatz {
-    public static void main(String[] args)
-    {
-        if(args.length != 2)
-        {
+    private static int counter = 2;
+    private static final int [] stoppingTimes = new int [1000];
+    private static final ReentrantLock lock = new ReentrantLock();
+    private static int numberOfCalculations = 2;
+
+    public static void main(String[] args) {
+        if (args.length != 2) {
             System.out.println("Missing necessary arguments");
             return;
         }
 
-        if(!tryParseInt(args[0]) && !tryParseInt(args[1]))
-        {
+        if (!tryParseInt(args[0]) && !tryParseInt(args[1])) {
             System.out.println("Not a proper integer value was given");
             return;
         }
 
-        int numberOfCalculations = Integer.parseInt(args[0]);
+        numberOfCalculations = Integer.parseInt(args[0]);
 
         int numberOfThreads = Integer.parseInt(args[1]);
 
-        int[] stoppingTimes = new int[1000];
-
         Instant startTime = Instant.now();
-        for(long i = 1; i < numberOfCalculations; i++)
-        {
-            long a = i;
-            int stoppingTime = 1;
-            while (a != 1)
-            {
-                a = CalculateNextA(a);
-                stoppingTime ++;
-            }
-            stoppingTimes[stoppingTime] = stoppingTimes[stoppingTime] + 1;
+        Thread[] threads = new Thread[numberOfThreads];
+        for (int i = 0; i < numberOfThreads; i++) {
+            threads[i] = new Task();
+            threads[i].start();
         }
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            }
+            catch (Exception ex)
+            {
+                System.err.println("Error joining threads");
+            }
+        }
+
         Instant endTime = Instant.now();
-        double elapsedTime = ((double) endTime.toEpochMilli() - (double) startTime.toEpochMilli())/1000.0;
+        double elapsedTime = ((double) endTime.toEpochMilli() - (double) startTime.toEpochMilli()) / 1000.0;
 
         System.err.print(numberOfCalculations);
         System.err.print(",");
@@ -42,26 +47,11 @@ public class MTCollatz {
         System.err.print(",");
         System.err.println(elapsedTime);
 
-        for(int i = 0; i < stoppingTimes.length; i++)
-        {
+        for (int i = 0; i < stoppingTimes.length; i++) {
             System.out.print(i);
             System.out.print(",");
             System.out.println(stoppingTimes[i]);
         }
-    }
-
-    private static long CalculateNextA(long a)
-    {
-        long nextA;
-        if(a % 2 == 0)
-        {
-            nextA = a / 2;
-        }
-        else
-        {
-            nextA = (3*a) + 1;
-        }
-        return nextA;
     }
 
     private static boolean tryParseInt(String value) {
@@ -70,6 +60,50 @@ public class MTCollatz {
             return true;
         } catch (NumberFormatException e) {
             return false;
+        }
+    }
+
+    private static class Task extends Thread {
+        public void run() {
+            while(counter < numberOfCalculations) {
+                lock.lock();
+                long a;
+                try {
+                    a = counter;
+                } catch (Exception ex) {
+                    System.err.println("Error when reading counter");
+                    return;
+                } finally {
+                    lock.unlock();
+                }
+
+                int stoppingTime = 1;
+                while (a != 1) {
+                    a = CalculateNextA(a);
+                    stoppingTime++;
+                }
+
+                lock.lock();
+                try {
+                    stoppingTimes[stoppingTime] = stoppingTimes[stoppingTime] + 1;
+                    counter ++;
+                } catch (Exception ex) {
+                    System.err.println("Error when writing to histogram");
+                    return;
+                } finally {
+                    lock.unlock();
+                }
+            }
+        }
+
+        private long CalculateNextA(long a) {
+            long nextA;
+            if (a % 2 == 0) {
+                nextA = a / 2;
+            } else {
+                nextA = (3 * a) + 1;
+            }
+            return nextA;
         }
     }
 }
