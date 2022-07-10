@@ -1,3 +1,5 @@
+import java.time.Instant;
+
 public class MTCollatz {
     public static void main(String[] args)
     {
@@ -15,6 +17,8 @@ public class MTCollatz {
         int numberOfCalculations = Integer.parseInt(args[0]);
 
         int[] stoppingTimes = new int[1000];
+
+        Instant startTime = Instant.now();
         for(long i = 1; i < numberOfCalculations; i++)
         {
             long a = i;
@@ -26,7 +30,13 @@ public class MTCollatz {
             }
             stoppingTimes[stoppingTime] = stoppingTimes[stoppingTime] + 1;
         }
-
+        Instant endTime = Instant.now();
+        double elapsedTime = ((double) endTime.toEpochMilli() - (double) startTime.toEpochMilli())/1000.0;
+        System.err.print(numberOfCalculations);
+        System.err.print(",");
+        System.err.print(1);
+        System.err.print(",");
+        System.err.println(elapsedTime);
         for(int i = 0; i < stoppingTimes.length; i++)
         {
             System.out.print(i);
@@ -48,6 +58,7 @@ public class MTCollatz {
         }
         return nextA;
     }
+
     private static boolean tryParseInt(String value) {
         try {
             Integer.parseInt(value);
