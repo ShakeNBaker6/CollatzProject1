@@ -3,18 +3,21 @@ import java.time.Instant;
 public class MTCollatz {
     public static void main(String[] args)
     {
-        if(args.length == 0)
+        if(args.length != 2)
         {
             System.out.println("Missing necessary arguments");
             return;
         }
 
-        if(!tryParseInt(args[0]))
+        if(!tryParseInt(args[0]) && !tryParseInt(args[1]))
         {
             System.out.println("Not a proper integer value was given");
             return;
         }
+
         int numberOfCalculations = Integer.parseInt(args[0]);
+
+        int numberOfThreads = Integer.parseInt(args[1]);
 
         int[] stoppingTimes = new int[1000];
 
@@ -32,11 +35,13 @@ public class MTCollatz {
         }
         Instant endTime = Instant.now();
         double elapsedTime = ((double) endTime.toEpochMilli() - (double) startTime.toEpochMilli())/1000.0;
+
         System.err.print(numberOfCalculations);
         System.err.print(",");
-        System.err.print(1);
+        System.err.print(numberOfThreads);
         System.err.print(",");
         System.err.println(elapsedTime);
+
         for(int i = 0; i < stoppingTimes.length; i++)
         {
             System.out.print(i);
